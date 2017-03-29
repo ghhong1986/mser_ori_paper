@@ -20,7 +20,6 @@
 #include <algorithm>
 
 #include <cmath>
-//#include <math.h> //@@
 #include <ctime>
 #include <cstdio>
 #include <iostream>
@@ -36,94 +35,6 @@ using namespace std;
 #include <highgui.h>
 using namespace cv;
 
-
-/*  因為用別的function取代所以用不到所以註解
-bool loadJpeg(const char * filename, int & width, int & height, int & depth, vector<uint8_t> & bits)
-{
-	// Try to load the jpeg image
-	FILE * file = fopen(filename, "rb");
-	
-	if (!file) {
-		cerr << "Could not open file: " << filename << endl;
-		return false;
-	}
-	
-	jpeg_decompress_struct cinfo;
-	jpeg_error_mgr jerr;
-	
-	cinfo.err = jpeg_std_error(&jerr);
-	jpeg_create_decompress(&cinfo);
-	jpeg_stdio_src(&cinfo, file);
-	
-	if ((jpeg_read_header(&cinfo, TRUE) != JPEG_HEADER_OK) || (cinfo.data_precision != 8) ||
-		!jpeg_start_decompress(&cinfo)) {
-		cerr << "Could not decompress jpeg file: " << filename << endl;
-		fclose(file);
-		return false;
-	}
-	
-	width = cinfo.image_width;
-	height = cinfo.image_height;
-	depth = cinfo.num_components;
-	bits.resize(width * height * depth);
-	
-	for (int y = 0; y < height; ++y) {
-		JSAMPLE * row = static_cast<JSAMPLE *>(&bits[y * width * depth]);
-		
-		if (jpeg_read_scanlines(&cinfo, &row, 1) != 1) {
-			cerr << "Could not decompress jpeg file: " << filename << endl;
-			fclose(file);
-			return false;
-		}
-	}
-	
-	jpeg_finish_decompress(&cinfo);
-	
-	fclose(file);
-	
-	return true;
-}
-*/
-
-/*
-bool saveJpeg(const char * filename, int width, int height, int depth,
-			  vector<uint8_t> & bits)
-{
-	FILE * file = fopen(filename, "wb");
-	
-	if (!file) {
-		cerr << "Could not open file: " << filename << endl;
-		return false;
-	}
-	
-	jpeg_compress_struct cinfo;
-	jpeg_error_mgr jerr;
-	
-	cinfo.err = jpeg_std_error(&jerr);
-	jpeg_create_compress(&cinfo);
-	jpeg_stdio_dest(&cinfo, file);
-	
-	cinfo.image_width = width;
-	cinfo.image_height = height;
-	cinfo.input_components = depth;
-	cinfo.in_color_space = (depth == 1) ? JCS_GRAYSCALE : JCS_RGB;
-	
-	jpeg_set_defaults(&cinfo);
-	jpeg_set_quality(&cinfo, 100, FALSE);
-	jpeg_start_compress(&cinfo, TRUE);
-	
-	for (int y = 0; y < height; ++y) {
-		const JSAMPLE * row = static_cast<const JSAMPLE *>(&bits[y * width * depth]);
-		jpeg_write_scanlines(&cinfo, const_cast<JSAMPARRAY>(&row), 1);
-	}
-	
-	jpeg_finish_compress(&cinfo);
-	
-	fclose(file);
-	
-	return true;
-}
-*/
 
 void drawEllipse(const MSER_1::Region & region, int width, int height, int depth,
 				 vector<uint8_t> & bits, const uint8_t * color)
@@ -180,16 +91,9 @@ void drawEllipse(const MSER_1::Region & region, int width, int height, int depth
 	}
 }
 
-//int main(int argc, const char * argv[])
+
 int main(void)
 {
-	// Check for correct usage of the command line
-	/*
-	if (argc != 3) {
-		cerr << "Usage: " << argv[0] << " input.jpg output.jpg" << endl;
-		return -1;
-	}
-	*/
 	// Try to load the jpeg image
 	int width;
 	int height;
@@ -210,10 +114,6 @@ int main(void)
 	depth = image_old.channels();
 	cout <<  "depth="<< depth<< endl;
 	
-	//顯示 Mat 資料
-	/*cout << image_old.at<Vec3b>(1,1) << endl;
-	cout << (int)image_old.at<Vec3b>(1,1)[0] << endl;
-	cout << (int)image_old.at<Vec3b>(1,1)[1] << endl;*/
 	//測試canny
 	Mat dst1;
 	clock_t start_time = clock();
@@ -228,43 +128,21 @@ int main(void)
 	for(int j = 0; j < height; ++j){
 		for(int i = 0; i < width; ++i){
 			for(int k = 0; k < depth; ++k){
-				//original[i*depth*height+j*depth+k] = image_old.at<Vec3b>(i, j)[k];
-				//cout << "k=" << k << endl;
 				original.push_back(image_old.at<Vec3b>(j,i)[k]);
-
-				/*if(i==1 && j==1 && k==1){
-					cout << "ori_data=" << (int)image_old.at<Vec3b>(j,i)[k]<< endl;
-				}*/
 			}
 		}
 	}
-	//int abc = 500;
-	//cout << abc << endl;
-	//cout << "in=" << (abc<<4) << endl ;
 	//=========================
 	//     ^^^^^^^^^^^^^^^
 	//=========================
-	/*
-	if (!loadJpeg(argv[1], width, height, depth, original))
-		return -1;
-	*/
-
-
-
 	// Create a grayscale image
 	vector<uint8_t> grayscale(width * height);
 	
-
 	for (int i = 0; i < width * height; ++i) {
 		int sum = 0;
 		
 		for (int j = 0; j < depth; ++j){
 			sum += static_cast<int>(original[i * depth + j]);
-			
-			/*if(i==1280 || i==0){
-			cout << "original[i * depth + j] = " << (int)original[i * depth + j] << endl;
-			cout << "sum = " << sum << endl;
-			}*/
 		}
 		grayscale[i] = sum / depth;
 	}
@@ -272,9 +150,6 @@ int main(void)
 	Mat gray_image = Mat::zeros(image_old.rows, image_old.cols, CV_8U);
 	for (int gray_line=0; gray_line<image_old.rows;gray_line++){
 		for (int gray_pixel=0; gray_pixel<image_old.cols;gray_pixel++){
-			/*cout << "gray_line=" << gray_line << endl;
-			cout << "gray_pixel=" << gray_pixel << endl;
-			cout << "grayscale[gray_line*image_old.cols + gray_pixel]=" << (int)grayscale[gray_line*image_old.cols + gray_pixel] << endl;*/
 			gray_image.at<uchar>(gray_line,gray_pixel) = grayscale[gray_line*image_old.cols + gray_pixel];
 		}
 	}
@@ -292,10 +167,6 @@ int main(void)
 	
 	vector<MSER_1::Region> regions[2];
 	
-	cout << "grayscale[1279]=" << (int)grayscale[1279] << endl;
-	cout << "&grayscale[0]=" << (int)&grayscale[0] << endl;
-	
-
 	mser8(&grayscale[0], width, height, regions[0]);
 	
 	// Invert the pixel values
@@ -329,13 +200,10 @@ int main(void)
 			}
 		}
 	}
-	//imshow("result_image",result_image);
-	//cvWaitKey(1);
+	imshow("result_image",result_image);
+	waitKey(1);
 
-	// Save the original image
-	/*
-	saveJpeg(argv[2], width, height, depth, original);
-	*/
 	system("PAUSE");
+	destroyAllWindows();
 	return 0;
 }
